@@ -1,0 +1,508 @@
+/* Formatted on 2019/02/14 오후 5:28:18 (QP5 v5.336) */
+--5장
+--Q1 : 사원 이름이 S로 끝나는 사원데이터 출력
+
+SELECT *
+  FROM EMP
+ WHERE ENAME LIKE '%S';
+
+--Q2 :
+
+SELECT EMPNO,
+       ENAME,
+       JOB,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE DEPTNO LIKE 30
+INTERSECT
+SELECT EMPNO,
+       ENAME,
+       JOB,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE JOB LIKE 'SALESMAN';
+
+--Q3 : 집합 연산자를 사용하지 않은 방식
+
+SELECT EMPNO,
+       ENAME,
+       JOB,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE DEPTNO IN (20, 30) AND SAL > 2000;
+
+--Q3 : 집합 연산자를 사용한 방식
+
+SELECT EMPNO,
+       ENAME,
+       JOB,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE DEPTNO IN (20, 30)
+MINUS
+SELECT EMPNO,
+       ENAME,
+       JOB,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE SAL <= 2000;
+
+--Q4 :
+
+SELECT *
+  FROM EMP
+ WHERE SAL < 2000 OR SAL > 3000;
+
+--Q5 :
+
+SELECT ENAME,
+       EMPNO,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE ENAME LIKE '%E%'
+MINUS
+SELECT ENAME,
+       EMPNO,
+       SAL,
+       DEPTNO
+  FROM EMP
+ WHERE SAL BETWEEN 1000 AND 2000;
+
+--Q6 :
+
+SELECT *
+  FROM EMP
+ WHERE     COMM IS NULL
+       AND MGR IS NOT NULL
+       AND JOB IN ('CLERK', 'MANAGER')
+       AND ENAME NOT LIKE '_L%';
+
+--6장
+--Q1 :
+
+SELECT EMPNO,
+       CONCAT (SUBSTR (EMPNO, 1, 2), '**')      AS MASKING_EMPNO,
+       ENAME,
+       CONCAT (SUBSTR (ENAME, 1, 1), '***')     AS MASKING_ENAME
+  FROM EMP
+ WHERE LENGTH (ENAME) BETWEEN 5 AND 6;
+
+SELECT EMPNO,
+       RPAD (SUBSTR (EMPNO, 1, 2), 4, '*')     AS MASKING_EMPNO,
+       ENAME,
+       RPAD (SUBSTR (ENAME, 1, 1), 4, '*')     AS MASKING_ENAME
+  FROM EMP
+ WHERE LENGTH (ENAME) BETWEEN 5 AND 6;
+
+--Q2 :
+
+SELECT EMPNO,
+       ENAME,
+       SAL,
+       TRUNC (SAL / 21.5, 2)           AS DAY_PAY,
+       ROUND ((SAL / 21.5) / 8, 1)     AS TIME_PAY
+  FROM EMP;
+
+ --Q3 :
+
+  SELECT EMPNO,
+         ENAME,
+         HIREDATE,
+         TO_CHAR (NEXT_DAY (ADD_MONTHS (HIREDATE, 3), '월요일'),
+                  'YYYY-MM-DD')                                       AS R_JOB,
+         CASE WHEN COMM IS NULL THEN 'N/A' ELSE TO_CHAR (COMM) END    AS COMM
+    FROM EMP
+ORDER BY HIREDATE ASC;
+
+  SELECT EMPNO,
+         ENAME,
+         HIREDATE,
+         TO_CHAR (NEXT_DAY (ADD_MONTHS (HIREDATE, 3), '월요일'),
+                  'YYYY-MM-DD')         AS R_JOB,
+         NVL (TO_CHAR (COMM), 'N/A')    AS COMM
+    FROM EMP
+ORDER BY HIREDATE ASC;
+
+--Q4 :
+
+SELECT EMPNO,
+       ENAME,
+       MGR,
+       CASE
+           WHEN MGR IS NULL THEN '0000'
+           WHEN SUBSTR (MGR, 1, 2) LIKE 75 THEN '5555'
+           WHEN SUBSTR (MGR, 1, 2) LIKE 76 THEN '6666'
+           WHEN SUBSTR (MGR, 1, 2) LIKE 77 THEN '7777'
+           WHEN SUBSTR (MGR, 1, 2) LIKE 78 THEN '8888'
+           ELSE TO_CHAR (MGR)
+       END    AS CHG_MGR
+  FROM EMP;
+
+SELECT EMPNO,
+       ENAME,
+       MGR,
+       CASE
+           WHEN MGR IS NULL THEN '0000'
+           WHEN SUBSTR (MGR, 1, 2) LIKE '75' THEN '5555'
+           WHEN SUBSTR (MGR, 1, 2) LIKE '76' THEN '6666'
+           WHEN SUBSTR (MGR, 1, 2) LIKE '77' THEN '7777'
+           WHEN SUBSTR (MGR, 1, 2) LIKE '78' THEN '8888'
+           ELSE TO_CHAR (MGR)
+       END    AS CHG_MGR
+  FROM EMP;
+
+--7장
+--Q1 :
+
+  SELECT DEPTNO,
+         TRUNC (AVG (SAL), 0)     AS AVG_SAL,
+         MAX (SAL)                AS MAX_SAL,
+         MIN (SAL)                AS MIN_DAL,
+         COUNT (EMPNO)            AS CNT
+    FROM EMP
+GROUP BY DEPTNO;
+
+--Q2 :
+
+  SELECT JOB, COUNT (EMPNO)
+    FROM EMP
+GROUP BY JOB
+  HAVING COUNT (EMPNO) >= 3;
+
+--Q3 :
+
+  SELECT TO_CHAR (HIREDATE, 'YYYY') AS HIRE_DATE, DEPTNO, COUNT (DEPTNO) AS CNT
+    FROM EMP
+GROUP BY TO_CHAR (HIREDATE, 'YYYY'), DEPTNO;
+
+--Q4 :
+
+  SELECT NVL2 (COMM, 'O', 'X') AS EXIST_COMM, COUNT (*)
+    FROM EMP
+GROUP BY NVL2 (COMM, 'O', 'X');
+
+--Q5 :
+
+  SELECT DEPTNO,
+         TO_CHAR (HIREDATE, 'YYYY'),
+         COUNT (*)     AS CNT,
+         MAX (SAL)     AS MAX_SAL,
+         SUM (SAL)     AS SUM_SAL,
+         AVG (SAL)     AS AVG_SAL
+    FROM EMP
+GROUP BY ROLLUP (DEPTNO, TO_CHAR (HIREDATE, 'YYYY'))
+ORDER BY DEPTNO ASC;
+
+--8장
+
+--Q1 ;
+--구 버전
+
+  SELECT D.DEPTNO,
+         D.DNAME,
+         E.EMPNO,
+         E.ENAME,
+         E.SAL
+    FROM DEPT D, EMP E
+   WHERE E.DEPTNO = D.DEPTNO AND E.SAL > 2000
+ORDER BY D.DEPTNO ASC;
+
+--신버전
+
+  SELECT D.DEPTNO,
+         D.DNAME,
+         E.EMPNO,
+         E.ENAME,
+         E.SAL
+    FROM DEPT D JOIN EMP E ON (E.DEPTNO = D.DEPTNO)
+   WHERE E.SAL > 2000
+ORDER BY D.DEPTNO ASC;
+
+--Q2
+--구버전
+
+  SELECT D.DEPTNO,
+         D.DNAME,
+         TRUNC (AVG (E.SAL), 0)     AS AVG_SAL,
+         MAX (E.SAL)                AS MAX_SAL,
+         MIN (E.SAL)                AS MIN_SAL,
+         COUNT (E.EMPNO)            AS CNT
+    FROM DEPT D, EMP E
+   WHERE E.DEPTNO = D.DEPTNO
+GROUP BY D.DEPTNO, D.DNAME
+ORDER BY D.DEPTNO ASC;
+
+--신버전
+
+  SELECT DEPTNO,
+         D.DNAME,
+         TRUNC (AVG (E.SAL), 0)     AS AVG_SAL,
+         MAX (E.SAL)                AS MAX_SAL,
+         MIN (E.SAL)                AS MIN_SAL,
+         COUNT (E.EMPNO)            AS CNT
+    FROM DEPT D JOIN EMP E USING (DEPTNO)
+GROUP BY DEPTNO, D.DNAME
+ORDER BY DEPTNO ASC;
+
+--Q3 :
+
+SELECT D.DEPTNO,
+       D.DNAME,
+       E.EMPNO,
+       E.ENAME,
+       E.JOB,
+       E.SAL
+  FROM EMP E RIGHT OUTER JOIN DEPT D ON (D.DEPTNO = E.DEPTNO);
+
+--Q4 :
+
+  SELECT D.DEPTNO,
+         D.DNAME,
+         E.EMPNO,
+         E.ENAME,
+         E.MGR,
+         E.SAL,
+         E.DEPTNO     AS DEPTNO_1,
+         S.LOSAL,
+         S.HISAL,
+         S.GRADE,
+         E1.EMPNO AS MGR_EMPNO,
+         E1.ENAME AS MGR_ENAME
+    FROM DEPT D
+         LEFT OUTER JOIN EMP E ON (D.DEPTNO = E.DEPTNO)
+         LEFT OUTER JOIN SALGRADE S ON (E.SAL BETWEEN LOSAL AND HISAL)
+         LEFT OUTER JOIN EMP E1 ON(E.MGR = E1.EMPNO)
+ORDER BY D.DEPTNO ASC;
+
+--9장
+--Q1 :
+SELECT E.JOB, E.EMPNO, E.ENAME, E.SAL, D.DEPTNO, D.DNAME
+  FROM EMP E JOIN DEPT D ON(E.DEPTNO = D.DEPTNO)
+ WHERE E.JOB = (SELECT JOB FROM EMP WHERE ENAME = 'ALLEN');
+ 
+--Q2 :
+SELECT E.EMPNO, E.ENAME, D.DNAME, TO_CHAR(E.HIREDATE, 'YYYY-MM-DD') AS HIREDATE, D.LOC, E.SAL, S.GRADE
+  FROM EMP E JOIN DEPT D ON(E.DEPTNO = D.DEPTNO)
+  JOIN SALGRADE S ON (E.SAL BETWEEN S.LOSAL AND S.HISAL)
+ WHERE E.SAL > (SELECT AVG(SAL) FROM EMP)
+ ORDER BY E.SAL DESC, E.EMPNO ASC;
+ 
+--Q3
+SELECT E.EMPNO, E.ENAME, E.JOB, DEPTNO, D.DNAME, D.LOC
+FROM EMP E JOIN DEPT D USING(DEPTNO)
+WHERE E.JOB NOT IN(SELECT JOB FROM EMP WHERE DEPTNO = 30 )
+AND DEPTNO = 10;
+
+--Q4
+SELECT E.EMPNO, E.ENAME, E.SAL, S.GRADE
+  FROM EMP E JOIN SALGRADE S ON(E.SAL BETWEEN S.LOSAL AND S.HISAL)
+ WHERE E.SAL > (SELECT MAX(SAL)
+                  FROM EMP
+                 WHERE JOB = 'SALESMAN');
+
+
+
+--10장
+CREATE TABLE CHAP10HW_EMP AS SELECT * FROM EMP;
+CREATE TABLE CHAP10HW_DEPT AS SELECT * FROM DEPT;
+CREATE TABLE CHAP10HW_SALGRADE AS SELECT * FROM SALGRADE;
+
+--Q1 :
+INSERT INTO CHAP10HW_DEPT (DEPTNO, DNAME, LOC) VALUES (50, 'ORACLE', 'BUSAN'); 
+
+INSERT INTO CHAP10HW_DEPT (DEPTNO, DNAME, LOC) VALUES (60, 'SQL', 'ILSAN');
+
+INSERT INTO CHAP10HW_DEPT (DEPTNO, DNAME, LOC) VALUES (70, 'SELECT', 'INCHEON');
+
+INSERT INTO CHAP10HW_DEPT (DEPTNO, DNAME, LOC) VALUES (80, 'DML', 'BUNDANG'); 
+
+--Q2 :
+INSERT INTO CHAP10HW_EMP
+VALUES(7201, 'TEST_USER1', 'MANAGER', 7788, TO_DATE('2016-01-02', 'YYYY-MM-DD'), 4500, NULL, 50);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7202, 'TEST_USER2', 'CLERK', 7201, TO_DATE('2016-02-21', 'YYYY-MM-DD'), 1800, NULL, 50);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7203, 'TEST_USER3', 'ANALYST', 7201, TO_DATE('2016-04-11', 'YYYY-MM-DD'), 3400, NULL, 60);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7204, 'TEST_USER4', 'SALESMAN', 7201, TO_DATE('2016-05-31', 'YYYY-MM-DD'), 2700, 300, 60);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7205, 'TEST_USER5', 'CLERK', 7201, TO_DATE('2016-07-20', 'YYYY-MM-DD'), 2600, NULL, 70);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7206, 'TEST_USER6', 'CLERK', 7201, TO_DATE('2016-09-08', 'YYYY-MM-DD'), 2600, NULL, 70);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7207, 'TEST_USER7', 'LECTURER', 7201, TO_DATE('2016-10-28', 'YYYY-MM-DD'), 2300, NULL, 80);
+ 
+INSERT INTO CHAP10HW_EMP
+VALUES(7208, 'TEST_USER8', 'STUDENT', 7201, TO_DATE('2018-03-09', 'YYYY-MM-DD'), 1200, NULL, 80);
+
+--Q3 :
+UPDATE CHAP10HW_EMP
+   SET DEPTNO = 70
+ WHERE SAL > (SELECT AVG(SAL)
+                FROM CHAP10HW_EMP
+               WHERE DEPTNO = 50);
+               
+--Q4 :
+UPDATE CHAP10HW_EMP
+   SET SAL = SAL*1.1,
+       DEPTNO = 80
+ WHERE HIREDATE > (SELECT MIN(HIREDATE)
+                     FROM CHAP10HW_EMP
+                    WHERE DEPTNO = 60);
+                    
+--Q5 :
+DELETE FROM CHAP10HW_EMP
+ WHERE EMPNO IN (SELECT E.EMPNO
+                   FROM CHAP10HW_EMP E, CHAP10HW_SALGRADE S
+                  WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL
+                    AND S.GRADE = 5);
+                    
+--11장
+
+--Q1 : 
+CREATE TABLE EMP_HW (
+    EMPNO NUMBER(4),
+    ENAME VARCHAR2(10),
+    JOB VARCHAR2(9),
+    MGR NUMBER(4),
+    HIREDATE DATE,
+    SAL NUMBER(7,2),
+    COMM NUMBER(7,2),
+    DEPTNO NUMBER(2)
+);
+
+DESC EMP_HW;
+--Q2 : 
+
+ALTER TABLE EMP_HW
+ADD (BIGO VARCHAR2(20));
+
+--Q3 : 
+ALTER TABLE EMP_HW
+MODIFY(BIGO VARCHAR(30));
+
+--Q4 :
+ALTER TABLE EMP_HW
+RENAME COLUMN BIGO TO REMARK;
+
+--Q5 :
+INSERT INTO EMP_HW 
+SELECT EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO, NULL 
+  FROM EMP; 
+
+--Q6 :
+DROP TABLE EMP_HW;
+
+
+--과제
+--1. 평균 급여가 가장 높은 부서 구하기
+
+SELECT DNAME     부서명
+  FROM DEPT  D,
+       (  SELECT DEPTNO, AVG (SAL) AS AVG
+            FROM EMP
+        GROUP BY DEPTNO
+        ORDER BY AVG DESC) E
+ WHERE D.DEPTNO LIKE E.DEPTNO AND ROWNUM = 1;
+
+-----------------------------------
+
+  SELECT E.DEPTNO, AVG (E.SAL)
+    FROM EMP E
+GROUP BY E.DEPTNO
+  HAVING AVG (E.SAL) = (  SELECT MAX (AVG (E.SAL))
+                            FROM EMP E
+                        GROUP BY E.DEPTNO);
+
+--2. 급여를 가장 많이 받는 부서에서 가장 급여가 높은 직급 구하기
+
+SELECT JOB
+  FROM EMP
+ WHERE SAL LIKE
+           (SELECT MAX (SAL)
+              FROM EMP
+             WHERE DEPTNO LIKE
+                       (SELECT D.DEPTNO
+                          FROM DEPT  D,
+                               (  SELECT DEPTNO, AVG (SAL) AS AVG
+                                    FROM EMP
+                                GROUP BY DEPTNO
+                                ORDER BY AVG DESC) E
+                         WHERE D.DEPTNO LIKE E.DEPTNO AND ROWNUM = 1));
+
+
+--------------------------------------------------------
+
+/*
+2019.02.14 
+서브쿼리
+
+문제1 : SALGARDE가 2인 사람이 가장 많은 부서의 이름 출력하기*/
+
+/* 정주현 코드 */
+
+SELECT DNAME
+  FROM DEPT
+ WHERE DEPTNO =
+       (  SELECT DEPTNO
+            FROM EMP E, SALGRADE S
+           WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL AND S.GRADE = 2
+        GROUP BY DEPTNO
+          HAVING COUNT (*) =
+                 (  SELECT MAX (COUNT (*))
+                      FROM EMP E, SALGRADE S
+                     WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL AND S.GRADE = 2
+                  GROUP BY DEPTNO));
+
+/* 실장님 코드 */
+
+  SELECT E.DEPTNO,
+         (SELECT D.DNAME
+            FROM DEPT D
+           WHERE E.DEPTNO = D.DEPTNO)    AS DNAME,
+         COUNT (*)
+    FROM EMP E, SALGRADE S
+   WHERE E.SAL BETWEEN S.LOSAL AND S.HISAL AND S.GRADE = 2
+GROUP BY DEPTNO;
+
+/* 문제2 : 이름이 JONES인 사람이 있는지 없는지 여부를 확인하는 코드*/
+--가장 권장하는 방법
+
+SELECT 1
+  FROM DUAL
+ WHERE EXISTS
+           (SELECT ENAME
+              FROM EMP
+             WHERE ENAME = 'JONES');
+
+--COUNT를 사용하는 방법(권장X)
+
+SELECT DECODE ((SELECT COUNT (*)
+                  FROM EMP
+                 WHERE ENAME = 'JONES'),
+               0, 'F',
+               'T')    RESULT
+  FROM DUAL;
+
+SELECT (CASE
+            WHEN (SELECT COUNT (*)
+                    FROM EMP
+                   WHERE ENAME = 'JONES') = 0
+            THEN
+                'F'
+            ELSE
+                'T'
+        END)    AS RESULT
+  FROM DUAL;

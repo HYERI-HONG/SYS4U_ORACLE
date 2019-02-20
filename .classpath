@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/logback-access-1.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/logback-classic-1.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/logback-core-1.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/slf4j-api-1.7.25.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/app/notebiz7750/product/11.2.0/dbhome_1/jdbc/lib/ojdbc6.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/c3p0-0.9.5.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/notebiz7750/jar/mchange-commons-java-0.2.15.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
